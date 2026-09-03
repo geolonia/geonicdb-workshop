@@ -8,11 +8,18 @@
 # 事前に super_admin でログインしておくこと:
 #   npx geonic config set url https://geonicdb.geolonia.com && npx geonic auth login
 #
-# !! staging に対して未検証。1 人分で疎通を確認してから残りを流すこと（organizer/README.md 参照）
+# ローカルの認証有効な GeonicDB (AUTH_ENABLED=true) に対して一通り検証済み:
+#   テナント作成 → ポリシー 2 本 → API キー → API キーで書き込み → 匿名で読み取り、
+#   および他テナントからの匿名読み取りが 403 になること。
+# staging では未実行。1 人分で疎通を確認してから残りを流すこと（organizer/README.md 参照）
 #
 set -euo pipefail
 
 TENANT="${1:?usage: provision.sh <tenant-name>}"
+# テナント名はサーバー側の制約: 小文字英数字とアンダースコアのみ（ハイフン不可）
+case "$TENANT" in
+  *[^a-z0-9_]*) echo "テナント名に使えるのは小文字英数字とアンダースコアだけです: $TENANT" >&2; exit 1 ;;
+esac
 URL="${GEONIC_URL:-https://geonicdb.geolonia.com}"
 ENTITY_TYPE="${ENTITY_TYPE:-EmergencyWaterSupply}"
 DRY_RUN="${DRY_RUN:-1}"
@@ -25,7 +32,8 @@ run() {
   "$@"
 }
 
-geonic() { npx --yes geonic --url "$URL" "$@"; }
+# GEONIC_TOKEN が設定されていればそれを使う（未設定なら保存済みログインを使う）
+geonic() { npx --yes geonic --url "$URL" ${GEONIC_TOKEN:+--token "$GEONIC_TOKEN"} "$@"; }
 
 echo "=== $TENANT ==="
 
@@ -34,7 +42,7 @@ echo "=== $TENANT ==="
 #    参加者は localhost と各自の GitHub Pages から接続するため。
 run geonic admin tenants create "{\"name\":\"$TENANT\",\"description\":\"workshop $TENANT\"}"
 
-TENANT_ID=""
+TENANT_ID="<tenant-id>"
 if [ "$DRY_RUN" != "1" ]; then
   TENANT_ID=$(geonic admin tenants list --format json \
     | python3 -c "
@@ -49,8 +57,11 @@ print(next((t.get('id') or t.get('tenantId') for t in items if t.get('name')==na
 fi
 
 # 2. 匿名の読み取りポリシー（ブラウザからの GET を許可する）
+#    tenantId を必ず入れる。省略すると tenantId=null の「全テナントに効くポリシー」に
+#    なり、staging の他テナントにも匿名読み取りが開く（実測で確認済み）。
 run geonic admin policies create "{
   \"policyId\": \"anon-read-$TENANT\",
+  \"tenantId\": \"$TENANT_ID\",
   \"description\": \"workshop: anonymous read for $ENTITY_TYPE\",
   \"target\": {
     \"subjects\": [{\"attributeId\": \"role\", \"matchValue\": \"anonymous\"}],
@@ -61,8 +72,11 @@ run geonic admin policies create "{
 }" --service "$TENANT"
 
 # 3. API キー用の読み書きポリシー（CLI からの投入を許可する）
+#    こちらも tenantId 必須。省略すると staging 上の全 API キーに
+#    /ngsi-ld/** の読み書きを許可してしまう。
 run geonic admin policies create "{
   \"policyId\": \"cli-rw-$TENANT\",
+  \"tenantId\": \"$TENANT_ID\",
   \"description\": \"workshop: api_key read/write on NGSI-LD\",
   \"target\": {
     \"subjects\": [{\"attributeId\": \"role\", \"matchValue\": \"api_key\"}],

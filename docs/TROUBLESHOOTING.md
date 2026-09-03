@@ -49,6 +49,19 @@ g entities list --type EmergencyWaterSupply --local --count-only
 | `429` | レート制限。少し待ってから再実行する。`--retries` で自動リトライもできる |
 | 一部だけ失敗する | `--continue-on-error --errors-out failed.ndjson --errors-log errors.log` を付けて、失敗行だけ後で再送する |
 
+## `geonic` が `Authentication failed` になる
+
+配布された API キーを `--api-key` で渡しているのに認証に失敗する場合、**その端末に別の
+ログイン情報が保存されている**可能性があります。CLI は保存済みトークンを優先し、
+`--api-key` は無視されます。
+
+```bash
+npx geonic auth logout          # 保存済みのログインを消す
+# もしくは一時的に設定を分ける
+HOME=$(mktemp -d) npx geonic entities list --type EmergencyWaterSupply --local \
+  --url https://geonicdb.geolonia.com --service <テナント名> --api-key <キー>
+```
+
 ## 点が海の上や外国に出る
 
 座標の順番が逆です。GeoJSON は **`[経度, 緯度]`**（`[136.9, 35.1]`）の順で、
