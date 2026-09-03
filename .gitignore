@@ -1,0 +1,12 @@
+node_modules
+dist
+.env
+.env.local
+.env.production
+*.local
+.DS_Store
+# ワークショップ中に生成する中間ファイル
+*.ndjson
+.import.ckpt
+errors.log
+*.tsbuildinfo
