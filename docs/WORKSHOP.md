@@ -20,7 +20,7 @@
 | 0:00–0:10 | 完成デモ | 完成版を見せる。GeonicDB / NGSI-LD / Geolonia Maps を 1 枚で説明 | 何を作るか分かる |
 | 0:10–0:30 | セットアップ | Use this template → clone → `npm install` → `.env.local` → `npm run dev` | **地図が出る**（データは 0 件） |
 | 0:30–0:50 | CLI で触る | `geonic me` → 1 件 create → list → `-f geojson` → delete | NGSI-LD の形が分かる |
-| 0:50–1:20 | CSV→NDJSON を AI に書かせる | 頼み方の実演。座標の順・BOM の 2 つだけ先に釘を刺す | 変換スクリプトができる |
+| 0:50–1:20 | CSV→NDJSON を AI に書かせる | opencode で頼み方を実演。座標の順・BOM の 2 つだけ先に釘を刺す | 変換スクリプトができる |
 | 1:20–1:35 | 投入 | `--dry-run` → `--batch-size 100` で import | **617 件が地図に出る**（本日のピーク） |
 | 1:35–1:45 | 休憩 | ここまで届いていない人を回収する | 全員が同じ状態に |
 | 1:45–2:30 | 画面を作り込む | 巡回。詰まっている人の頼み方を直す | 絞り込み・検索が動く |
@@ -83,6 +83,24 @@ AI への頼み方は README の手順 4 のプロンプトをそのまま投影
 | AI が迷走 | 一度に頼み過ぎ。`git checkout -- .` で戻して 1 つずつに分ける |
 
 詳細な対処は [TROUBLESHOOTING.md](TROUBLESHOOTING.md) にあります。参加者にはまずこれを見せてください。
+
+## AI 環境について（当日までに確認すること）
+
+使うのは **opencode**（ターミナルのエージェント）+ **Big Pickle**（無料モデル、コンテキスト 200K）。
+モデルはリポジトリの `opencode.json` で固定してあるので、参加者はモデルを選ぶ必要がありません。
+
+**当日までに主催者が一次情報を取っておくこと:**
+
+- Big Pickle は「**期間限定**の無料提供」とされているモデルです。当日も無料で使えるか、
+  前日に `opencode` の `/models` で確認してください。
+- `https://opencode.ai/auth` の**サインアップにクレジットカードが必要かどうか**。
+  公式ドキュメントの手順には "add your billing details" が含まれますが、
+  Big Pickle 等の無料モデルについては「カード不要」とする情報もあり、**一次確認が取れていません**。
+  必ず**新規アカウントで一度サインアップを試して**から参加者に案内してください。
+- 上の 2 つが崩れていた場合の代替: **Gemini API の無料キー**（Google AI Studio で発行、
+  カード不要、Gemini 3 Flash で 15 RPM・1,000 リクエスト/日、期限なし）を opencode の
+  `/connect` で Google プロバイダーとして接続する。`opencode.json` の `model` を
+  `google/gemini-3-flash` 等に差し替えれば同じ進行で通せます。
 
 ## 事前準備
 

@@ -21,20 +21,32 @@
 |---|---|
 | Node.js 20 以上 | `node -v` で確認 |
 | Git / GitHub アカウント | テンプレートの複製と公開に使う |
-| Google アカウント | AI（Gemini CLI）のログインに使う。無料 |
+| GitHub / Google アカウント | AI（opencode）のサインインに使う |
 | 接続情報カード | 当日配布。GeonicDB の URL とテナント名、API キーが書いてあります |
 
 AI のセットアップ（1 回だけ）:
 
 ```bash
-npm install -g @google/gemini-cli
-gemini            # 初回はブラウザが開くので Google アカウントでログイン
+# インストール（npm でも入ります: npm install -g opencode-ai）
+curl -fsSL https://opencode.ai/install | bash
+
+# 起動
+opencode
 ```
 
-> 無料枠は 1 日 1,000 リクエスト。ワークショップ中に使い切ることはまずありません。
+初回だけ、opencode の中で接続設定をします。
+
+1. `/connect` と入力して **opencode** を選ぶ
+2. ブラウザで https://opencode.ai/auth を開いてサインインし、API キーをコピー
+3. opencode に戻ってキーを貼る
+
+使うモデルは **Big Pickle**（無料・コンテキスト 200K）です。このリポジトリの
+`opencode.json` で指定済みなので、モデルを選ぶ操作は不要です。
+切り替えたいときは `/models` で選べます（**無料表示のモデル以外を選ぶと課金対象になります**）。
+
 > Cursor / Claude Code / GitHub Copilot を使い慣れている方はそれでも構いません。
-> このリポジトリには `AGENTS.md` `CLAUDE.md` `.cursorrules` を同じ内容で置いてあるので、
-> どのツールでもプロジェクトのルールが読まれます。
+> このリポジトリには `AGENTS.md`（opencode が読む標準ファイル）と、同じ内容の
+> `CLAUDE.md` `.cursorrules` を置いてあるので、どのツールでもプロジェクトのルールが読まれます。
 
 ---
 
@@ -132,7 +144,7 @@ ID,施設名,施設名フリガナ,施設種別,区・町名,住所,緯度,経�
 ```
 
 CLI が読み込めるのは **NDJSON（1 行 1 エンティティ）** なので、CSV を変換する必要があります。
-この変換スクリプトを AI に書かせてください。`gemini` を起動して、たとえばこう頼みます。
+この変換スクリプトを AI に書かせてください。`opencode` を起動して、たとえばこう頼みます。
 
 ```text
 data/nagoya-emergency-water-supply.csv を NGSI-LD の NDJSON に変換する Node スクリプトを

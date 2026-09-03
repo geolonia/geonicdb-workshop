@@ -79,11 +79,26 @@ npm install && npm run lint && npm run build      # 通ることを確認
 
 参加者は「Use this template」から複製します。**リポジトリが Public でないと参加者が複製できません。**
 
-### 5. 参加者への事前案内
+### 5. AI 環境の下見（必須）
 
-- Node.js 20 以上、Git、GitHub アカウント、Google アカウント（Gemini CLI 用）
+使うのは **opencode** + 無料モデル **Big Pickle**（`opencode/big-pickle`、リポジトリの
+`opencode.json` で固定済み）。ただし次の 2 点は**一次確認が取れていません**。前日までに
+主催者自身が新規アカウントで試してください。
+
+- `https://opencode.ai/auth` のサインアップで**クレジットカードを要求されないか**
+  （公式手順には "add your billing details" が含まれる一方、無料モデルはカード不要とする情報もある）
+- Big Pickle が当日も無料で提供されているか（「期間限定の無料提供」とされているモデル）
+
+崩れていた場合の代替は **Gemini API の無料キー**（Google AI Studio、カード不要、
+Gemini 3 Flash で 15 RPM・1,000 リクエスト/日、期限なし）。`opencode` の `/connect` で
+Google を接続し、`opencode.json` の `model` を差し替えれば進行は変わりません。
+参加者への案内文だけ差し替えられるよう、両方の手順を手元に用意しておいてください。
+
+### 6. 参加者への事前案内
+
+- Node.js 20 以上、Git、GitHub アカウント
 - 会場の回線で `npm install`（約 340 パッケージ）が走ります。事前に済ませてもらうと 10 分縮みます
-- `npm install -g @google/gemini-cli` と初回ログインも事前に済ませてもらう
+- `curl -fsSL https://opencode.ai/install | bash` と `/connect` の初回接続も事前に済ませてもらう
 
 ## 当日の注意
 
