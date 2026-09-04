@@ -3,15 +3,15 @@
 対象のオープンデータを **GeonicDB**（FIWARE Orion 互換の Context Broker）に取り込み、
 **Geolonia Maps** の地図で可視化する Web アプリを、AI にコードを書かせながら作ります。
 
-対象地域・データセットは開催回ごとに異なります。当日の内容は
-[`workshop.config.json`](workshop.config.json) と主催者から配布される資料で確認してください。
+対象地域・データセットは開催回ごとに異なります。当日の内容は主催者から配布される資料で
+確認してください。
 
 - 地図は **Geolonia Maps**（`@geolonia/embed`）
 - データの投入は **geonicdb-cli**（`geonic`）
 - 画面は React + TypeScript + Vite
 - **すべて無料プランで完走できます**（クレジットカード登録なし）
 
-このリポジトリは「地図が最初から表示される」状態まで出来ています。皆さんがやるのは
+このリポジトリは「地図が 1 つ表示される」状態まで出来ています（`src/App.tsx`）。皆さんがやるのは
 **データを入れること**、**それを地図に表示するコードを書くこと**、そして**画面を作り込むこと**です。
 
 ---
@@ -46,8 +46,8 @@ opencode
 切り替えたいときは `/models` で選べます（**無料表示のモデル以外を選ぶと課金対象になります**）。
 
 > Cursor / Claude Code / GitHub Copilot を使い慣れている方はそれでも構いません。
-> このリポジトリには `AGENTS.md`（opencode が読む標準ファイル）と、同じ内容の
-> `CLAUDE.md` `.cursorrules` を置いてあるので、どのツールでもプロジェクトのルールが読まれます。
+> このリポジトリの `AGENTS.md` は多くのツールが標準で読むファイル名なので、
+> どのツールでもプロジェクトのルールが読まれます。
 
 ---
 
@@ -85,9 +85,12 @@ GitHub Pages でそのまま使える開発用キーです）。
 npm start
 ```
 
-http://localhost:5173 を開くと、**対象地域だけが表示された地図**が出ます。まだ `src/App.tsx` に
-データを取得して表示するコードを書いていないので、これで正常です（エラーも出ません）。
+http://localhost:5173 を開くと、**地図だけが表示された画面**が出ます。まだデータを取得して
+表示するコードを書いていないので、これで正常です（エラーも出ません）。
 ここまで来たら第一関門クリアです。
+
+表示位置は `src/App.tsx` の `<div class="geolonia">` の `data-lat` / `data-lng` / `data-zoom`
+で決まっています。開催地に合わせて変えたいときは、この値を書き換えてください。
 
 ---
 
@@ -111,8 +114,8 @@ export GEONIC_TENANT=<テナント名>
 alias g="npx geonic --api-key $GEONIC_API_KEY --service $GEONIC_TENANT"
 ```
 
-試しに 1 件だけ手で入れて、消してみましょう（`workshop.config.json` の `entityType` を
-`Facility` のところに読み替えてください）。
+試しに 1 件だけ手で入れて、消してみましょう（エンティティ型名 `Facility` は例です。
+実際に使う型名は主催者の資料に従ってください）。
 
 ```bash
 g entities create '{
@@ -146,7 +149,7 @@ CLI が読み込めるのは **NDJSON（1 行 1 エンティティ）** なの�
 
 ```text
 <データセットのファイル名>.csv を NGSI-LD の NDJSON に変換する Node スクリプトを
-scripts/csv-to-ngsild.mjs に作ってください。仕様は AGENTS.md と workshop.config.json に従うこと。
+scripts/csv-to-ngsild.mjs に作ってください。仕様は AGENTS.md に従うこと。
 外部パッケージは使わず、node 標準モジュールだけで書いてください。
 ```
 
@@ -173,9 +176,9 @@ Imported: N succeeded, 0 failed, 0 skipped across N chunk(s).
 
 ```text
 src/App.tsx を書き換えて、起動時に GeonicDB からデータを取得し、地図に表示してください。
-src/lib/geonicdb.ts の fetchFeatures() でエンティティを取得し、toGeoJSON() で
-GeoJSON に変換して、<MapView data={geojson} /> のように渡してください。
-src/components/MapView.tsx は変更しないでください。
+@geolonia/geonicdb-sdk を使って anonymous:true でエンティティを取得し、GeoJSON に変換して
+地図の geolonia.Map インスタンスに addSource / addLayer で表示してください。
+仕様は AGENTS.md に従うこと。
 ```
 
 うまくいくとブラウザに点が出ます。ここが本日のピークです。
@@ -194,7 +197,7 @@ AI に日本語で頼んでいけば進みます。頼み方の例:
 
 ```text
 「現在地から近い順」ボタンを付けてください。ブラウザの位置情報を取り、
-src/lib/geonicdb.ts の fetchNearby() を使って半径 3km 以内を近い順に一覧表示します。
+GeonicDB の Geo-query（georel=near、orderByDistance）で半径 3km 以内を近い順に一覧表示します。
 ```
 
 変更したら必ず通しておきます。
@@ -203,9 +206,6 @@ src/lib/geonicdb.ts の fetchNearby() を使って半径 3km 以内を近い順�
 npm run lint
 npm run build
 ```
-
-**`src/components/MapView.tsx` は完成済みなので触らなくて大丈夫です**（地図の初期化は
-React だと壊しやすいので、こちらで用意しました）。
 
 ---
 
@@ -227,8 +227,8 @@ GitHub Pages で公開できます。
 
 ## データの出典
 
-対象データの出典・ライセンスは、主催者の配布資料と画面右下の出典表示
-（`workshop.config.json` の `attribution`）を参照してください。
+対象データの出典・ライセンスは、主催者の配布資料を参照してください
+（CC BY 等で表示が必須な場合は、画面に出典表示を追加してください）。
 
 ## ライセンス
 
