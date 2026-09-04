@@ -6,10 +6,11 @@
  * 秘密が漏れない。書き込みは geonicdb-cli 側（API キー認証）で行う。
  */
 import GeonicDB from '@geolonia/geonicdb-sdk'
-import type { Facility, FacilityCollection } from './types'
+import { config } from './config'
+import type { Feature, MapCollection } from './types'
 
-/** ワークショップで使うエンティティ型名。 */
-export const ENTITY_TYPE = 'EmergencyWaterSupply'
+/** ワークショップで使うエンティティ型名（workshop.config.json で決める）。 */
+export const ENTITY_TYPE = config.entityType
 
 const baseUrl = import.meta.env.VITE_GEONICDB_URL
 const tenant = import.meta.env.VITE_GEONICDB_TENANT
@@ -30,13 +31,13 @@ export const db = new GeonicDB({
 const PAGE_SIZE = 1000
 
 /**
- * エンティティを全件取得して Facility[] に変換する。
+ * エンティティを全件取得して Feature[] に変換する。
  *
  * `options: 'keyValues'` を付けると属性が `{ type, value }` ではなく値そのものになり、
  * 画面側の取り回しが楽になる（NGSI-LD の簡易表現）。
  */
-export async function fetchFacilities(): Promise<Facility[]> {
-  const all: Facility[] = []
+export async function fetchFeatures(): Promise<Feature[]> {
+  const all: Feature[] = []
 
   for (let offset = 0; ; offset += PAGE_SIZE) {
     const page = await db.getEntities({
@@ -46,7 +47,7 @@ export async function fetchFacilities(): Promise<Facility[]> {
       offset,
     })
 
-    all.push(...page.map(toFacility).filter((f): f is Facility => f !== null))
+    all.push(...page.map(toFeature).filter((f): f is Feature => f !== null))
 
     if (page.length < PAGE_SIZE) break
   }
@@ -55,13 +56,13 @@ export async function fetchFacilities(): Promise<Facility[]> {
 }
 
 /**
- * 指定座標から半径 radiusMeters 以内の施設を、近い順に取得する。
+ * 指定座標から半径 radiusMeters 以内のデータを、近い順に取得する。
  * NGSI-LD の Geo-query（georel / geometry / coordinates は 3 つセットで指定）。
  */
 export async function fetchNearby(
   center: [number, number],
   radiusMeters: number,
-): Promise<Facility[]> {
+): Promise<Feature[]> {
   const entities = await db.getEntities({
     type: ENTITY_TYPE,
     options: 'keyValues',
@@ -72,11 +73,11 @@ export async function fetchNearby(
     limit: PAGE_SIZE,
   })
 
-  return entities.map(toFacility).filter((f): f is Facility => f !== null)
+  return entities.map(toFeature).filter((f): f is Feature => f !== null)
 }
 
-/** keyValues 表現のエンティティ 1 件を Facility に変換する。座標が無ければ null。 */
-function toFacility(entity: Record<string, unknown>): Facility | null {
+/** keyValues 表現のエンティティ 1 件を Feature に変換する。座標が無ければ null。 */
+function toFeature(entity: Record<string, unknown>): Feature | null {
   const location = entity.location as { coordinates?: unknown } | undefined
   const coordinates = location?.coordinates
 
@@ -85,29 +86,26 @@ function toFacility(entity: Record<string, unknown>): Facility | null {
   const [lng, lat] = coordinates as [number, number]
   if (typeof lng !== 'number' || typeof lat !== 'number') return null
 
-  return {
-    id: String(entity.id),
-    name: str(entity.name),
-    category: str(entity.category),
-    ward: str(entity.ward),
-    address: str(entity.address),
-    lng,
-    lat,
+  // id / type / location 以外の属性を、そのまま文字列として持ち回る。
+  const props: Record<string, string> = {}
+  for (const [key, value] of Object.entries(entity)) {
+    if (key === 'id' || key === 'type' || key === 'location') continue
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      props[key] = String(value)
+    }
   }
-}
 
-function str(value: unknown): string {
-  return typeof value === 'string' ? value : ''
+  return { id: String(entity.id), lng, lat, props }
 }
 
 /** 地図に渡すための GeoJSON に変換する。 */
-export function toGeoJSON(facilities: Facility[]): FacilityCollection {
+export function toGeoJSON(features: Feature[]): MapCollection {
   return {
     type: 'FeatureCollection',
-    features: facilities.map(({ lng, lat, ...properties }) => ({
+    features: features.map(({ id, lng, lat, props }) => ({
       type: 'Feature',
       geometry: { type: 'Point', coordinates: [lng, lat] },
-      properties,
+      properties: { ...props, id },
     })),
   }
 }

@@ -4,6 +4,9 @@
 
 毎回オプションを書かずに済むよう、最初にこれを実行しておくと楽です。
 
+> 配布された API キーは DPoP（RFC 9449）必須で発行されています。`geonic` が透過的に
+> 処理するので、意識する必要はありません。
+
 ```bash
 export GEONIC_API_KEY=<配布カードの API キー>
 export GEONIC_TENANT=<テナント名>
@@ -15,13 +18,13 @@ alias g="npx geonic --url https://geonicdb.geolonia.com --api-key $GEONIC_API_KE
 | 自分の認証状態を見る | `g me` |
 | サーバーの生死確認 | `npx geonic health --url https://geonicdb.geolonia.com` |
 | 1 件作る | `g entities create '{"id":"...","type":"...","name":{"type":"Property","value":"..."}}'` |
-| 一覧（型で絞る） | `g entities list --type EmergencyWaterSupply --local` |
-| 一覧を GeoJSON で | `g entities list --type EmergencyWaterSupply --local -f geojson` |
-| 一覧を表で | `g entities list --type EmergencyWaterSupply --local -f table` |
-| 1 件取得 | `g entities get urn:ngsi-ld:EmergencyWaterSupply:nagoya:1` |
-| 属性を更新 | `g entities update <id> '{"name":{"type":"Property","value":"新しい名前"}}'` |
-| 1 件削除 | `g entities delete <id>` |
-| 件数だけ数える | `g entities list --type EmergencyWaterSupply --local --count-only` |
+| 一覧（型で絞る） | `g entities list --type YOUR_ENTITY_TYPE --local` |
+| 一覧を GeoJSON で | `g entities list --type YOUR_ENTITY_TYPE --local -f geojson` |
+| 一覧を表で | `g entities list --type YOUR_ENTITY_TYPE --local -f table` |
+| 1 件取得 | `g entities get urn:ngsi-ld:YOUR_ENTITY_TYPE:1` |
+| 属性を更新 | `g entities update YOUR_ENTITY_ID '{"name":{"type":"Property","value":"新しい名前"}}'` |
+| 1 件削除 | `g entities delete YOUR_ENTITY_ID` |
+| 件数だけ数える | `g entities list --type YOUR_ENTITY_TYPE --local --count-only` |
 | NDJSON を一括投入 | `g import entities.ndjson --batch-size 100` |
 | 投入内容を事前確認 | `g import entities.ndjson --dry-run` |
 | 失敗行を回収して再送 | `g import entities.ndjson --continue-on-error --errors-out failed.ndjson` |
@@ -35,13 +38,13 @@ alias g="npx geonic --url https://geonicdb.geolonia.com --api-key $GEONIC_API_KE
 
 ```jsonc
 {
-  "id": "urn:ngsi-ld:EmergencyWaterSupply:nagoya:1",  // URN 形式が推奨
-  "type": "EmergencyWaterSupply",
-  "name": { "type": "Property", "value": "東山配水場" },
+  "id": "urn:ngsi-ld:YOUR_ENTITY_TYPE:1",  // URN 形式が推奨
+  "type": "YOUR_ENTITY_TYPE",
+  "name": { "type": "Property", "value": "○○センター" },
   "capacity": { "type": "Property", "value": 100 },        // 数値もそのまま value に
   "location": {
     "type": "GeoProperty",
-    "value": { "type": "Point", "coordinates": [136.955, 35.173] }   // [経度, 緯度]
+    "value": { "type": "Point", "coordinates": [139.767, 35.681] }   // [経度, 緯度]
   }
 }
 ```
@@ -58,7 +61,7 @@ alias g="npx geonic --url https://geonicdb.geolonia.com --api-key $GEONIC_API_KE
 |---|---|
 | `options=keyValues` | `{type, value}` を剥がして値だけにする |
 | `limit` / `offset` | ページング（1 回の上限は 1,000 件） |
-| `q=category=="仮設給水栓"` | 属性値で絞り込む |
+| `q=category=="種別A"` | 属性値で絞り込む |
 | `attrs=name,location` | 返す属性を絞る |
 | `orderBy=name&orderDirection=asc` | 並び替え |
 | `georel` + `geometry` + `coordinates` | 地理検索（3 点セットで指定） |
@@ -75,7 +78,8 @@ alias g="npx geonic --url https://geonicdb.geolonia.com --api-key $GEONIC_API_KE
 コピペで使える例:
 
 ```text
-サイドパネルに施設種別（常設給水栓 / 地下式給水栓 / 仮設給水栓）のチェックボックスを追加し、
+サイドパネルに種別（実際の値は workshop.config.json や AGENTS.md のデータモデルを参照）の
+チェックボックスを追加し、
 チェックが外れた種別を地図から隠してください。件数も種別ごとに出してください。
 MapView.tsx は変更せず、App.tsx とスタイルだけで実現してください。
 ```

@@ -4,11 +4,16 @@
 
 ## 全体像
 
+- 対象地域・データセットは開催回ごとに変わります。前日までに
+  [../workshop.config.json](../workshop.config.json) と [../data/README.md](../data/README.md) を
+  その回の内容に更新してください。
 - 参加者は **1 人 1 テナント**（無料プラン T0）。共用にすると 300 重み/分・同時 5・
   エンティティ 1,000 件を全員で取り合い、`import` が集中する 1:20 前後で詰まります。
 - ブラウザ側は**匿名の読み取り専用**。フロントに API キーを置かないので、
   参加者が成果物を GitHub Pages に公開しても秘密が漏れません。
-- 書き込み（`geonic import`）は **API キー**で行います。
+- 書き込み（`geonic import`）は **API キー**で行います。**このワークショップの API キーは
+  DPoP（RFC 9449）必須**で発行します（`provision.sh` の `--dpop-required`）。DPoP のハンドシェイクは
+  `geonic` CLI が透過的に処理するため、主催者・参加者とも追加の作業は不要です。
 
 必要な権限: staging（`https://geonicdb.geolonia.com`）の `super_admin`。
 
@@ -36,7 +41,7 @@ for i in $(seq -w 1 20); do DRY_RUN=0 ./organizer/provision.sh "ws$i"; done
 > **ローカルの認証有効な GeonicDB（`AUTH_ENABLED=true`）に対しては一通り検証済みです。**
 > テナント作成 → ポリシー 2 本 → API キー → API キーで書き込み(201) → 匿名で読み取り(200) →
 > 無関係なテナントからの匿名読み取り(403) → 匿名書き込み(403) → 他テナントへの越境書き込み(403) →
-> `geonic import` 617 件成功、まで確認しました。
+> `geonic import` での一括投入成功、まで確認しました。
 > **staging では未実行です。** 必ず 1 人分だけ実行して疎通を確かめてから残りを流してください。
 
 **テナント名は小文字英数字とアンダースコアのみ**（ハイフン不可）。`ws-01` はサーバーに弾かれます。
@@ -63,17 +68,17 @@ TENANT=ws01
 KEY=<発行された API キー>
 
 # 書き込みできる（API キー経由）
-npx geonic entities create '{"id":"urn:ngsi-ld:EmergencyWaterSupply:probe:1","type":"EmergencyWaterSupply",
+npx geonic entities create '{"id":"urn:ngsi-ld:<ENTITY_TYPE>:probe:1","type":"<ENTITY_TYPE>",
   "name":{"type":"Property","value":"probe"},
-  "location":{"type":"GeoProperty","value":{"type":"Point","coordinates":[136.9,35.18]}}}' \
+  "location":{"type":"GeoProperty","value":{"type":"Point","coordinates":[139.767,35.681]}}}' \
   --url https://geonicdb.geolonia.com --service "$TENANT" --api-key "$KEY"
 
 # 匿名で読める（Authorization ヘッダなし・ブラウザと同じ条件）
 curl -s -H "NGSILD-Tenant: $TENANT" -H "Origin: http://localhost:5173" \
-  "https://geonicdb.geolonia.com/ngsi-ld/v1/entities?type=EmergencyWaterSupply&options=keyValues&limit=5"
+  "https://geonicdb.geolonia.com/ngsi-ld/v1/entities?type=<ENTITY_TYPE>&options=keyValues&limit=5"
 
 # 片付け
-npx geonic entities delete urn:ngsi-ld:EmergencyWaterSupply:probe:1 \
+npx geonic entities delete urn:ngsi-ld:<ENTITY_TYPE>:probe:1 \
   --url https://geonicdb.geolonia.com --service "$TENANT" --api-key "$KEY"
 ```
 
@@ -127,8 +132,9 @@ Google を接続し、`opencode.json` の `model` を差し替えれば進行は
   `localhost` と各自の GitHub Pages ドメインからアクセスするため、絞ると全員分の
   登録が必要になります。加えて staging の WAF はリクエストボディに `http://localhost` を
   含むと 403 を返すので、`localhost` を許可リストに登録する操作自体が通りません。
-- 無料プランのエンティティ上限は 1,000 件。今回のデータは 617 件なので、
-  参加者が 2 回投入しても（同じ `id` なら上書きで）増えません。
+- 無料プランのエンティティ上限は 1,000 件。`workshop.config.json` と `data/README.md` で
+  選んだデータセットの件数を事前に確認してください。参加者が 2 回投入しても
+  （同じ `id` なら上書きで）増えません。
 - 進行台本は [../docs/WORKSHOP.md](../docs/WORKSHOP.md)。
 
 ## 終わったあと

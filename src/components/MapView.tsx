@@ -4,42 +4,54 @@
  * ★ このファイルは完成済みです。ワークショップ中は基本的に触らなくて構いません。
  *   （地図の初期化は React だと壊しやすいので、こちらで済ませてあります）
  *
+ * Geolonia Maps 本体は index.html の <script> タグ（CDN）で読み込み済みで、
+ * window.geolonia として使える（型は src/types/geolonia.d.ts）。
+ *
  * 使い方:
+ *   <MapView />                                    // 地図だけ表示
  *   <MapView data={geojson} selectedId={id} onSelect={setId} />
  */
-import { useEffect, useRef } from 'react'
-import { GeoloniaMap, keyring } from '@geolonia/embed/core'
-import type { FacilityCollection } from '../lib/types'
+import { useEffect, useRef, useState } from 'react'
+import { config } from '../lib/config'
+import type { MapCollection } from '../lib/types'
+import gsiStyle from '../styles/geolonia-gsi.json'
 
-// YOUR-API-KEY は localhost / GitHub Pages / Vercel / Netlify / Cloudflare Pages で
-// そのまま使える開発用キー。独自ドメインで公開するときだけ実キーに差し替える。
-keyring.apiKey = import.meta.env.VITE_GEOLONIA_API_KEY || 'YOUR-API-KEY'
-// npm から使う場合、stage は script タグから読めないので明示する（既定は 'dev'）。
-keyring.stage = 'v1'
+const SOURCE_ID = 'entities'
+const LAYER_ID = 'entities-circle'
+const LAYER_ID_SELECTED = 'entities-selected'
 
-const SOURCE_ID = 'facilities'
-const LAYER_ID = 'facilities-circle'
-const LAYER_ID_SELECTED = 'facilities-selected'
+/** データが 0 件のときの初期表示。開催地に合わせて workshop.config.json で変える。 */
+const DEFAULT_CENTER: [number, number] = [config.map.center.lng, config.map.center.lat]
+const DEFAULT_ZOOM = config.map.zoom
 
-/** 名古屋市役所あたり。 */
-const DEFAULT_CENTER: [number, number] = [136.9066, 35.1815]
-const DEFAULT_ZOOM = 11
+const EMPTY: MapCollection = { type: 'FeatureCollection', features: [] }
 
 type Props = {
-  data: FacilityCollection
+  data?: MapCollection
   selectedId?: string | null
   onSelect?: (id: string | null) => void
-  /** 点の色分けに使う properties のキー。既定は category。 */
-  colorBy?: keyof FacilityCollection['features'][number]['properties']
+  /** 点の色分けに使う properties のキー。既定は workshop.config.json の map.colorBy。 */
+  colorBy?: string
 }
 
-type GeoJsonSourceLike = { setData: (data: FacilityCollection) => void }
+/**
+ * 色分けの式を組み立てる。
+ * workshop.config.json の map.colors が空なら defaultColor の 1 色になる。
+ */
+function circleColor(colorBy: string): unknown {
+  const entries = Object.entries(config.map.colors)
+  if (entries.length === 0) return config.map.defaultColor
+  return ['match', ['get', colorBy], ...entries.flat(), config.map.defaultColor]
+}
 
-const EMPTY: FacilityCollection = { type: 'FeatureCollection', features: [] }
-
-export function MapView({ data, selectedId = null, onSelect, colorBy = 'category' }: Props) {
+export function MapView({
+  data = EMPTY,
+  selectedId = null,
+  onSelect,
+  colorBy = config.map.colorBy,
+}: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const mapRef = useRef<GeoloniaMap | null>(null)
+  const mapRef = useRef<geolonia.Map | null>(null)
   const readyRef = useRef(false)
   const fittedRef = useRef(false)
   /** 地図の load 完了前に届いた更新をためておく。 */
@@ -49,14 +61,26 @@ export function MapView({ data, selectedId = null, onSelect, colorBy = 'category
   useEffect(() => {
     onSelectRef.current = onSelect
   }, [onSelect])
+  // index.html の <script> タグ（CDN）はモジュールスクリプトより先に同期実行されるため、
+  // マウント時点で window.geolonia の有無が確定している（effect を使わずに判定できる）。
+  const [unavailable] = useState(() => !window.geolonia?.Map)
 
   // 地図の生成は一度だけ。
   useEffect(() => {
     if (!containerRef.current) return
+    // ネットワーク不通・広告ブロッカー等で CDN スクリプトが読み込めなかった場合。
+    // 呼び出し側にエラーを投げさせず、地図の代わりにメッセージを表示する（下の unavailable 分岐）。
+    if (!window.geolonia?.Map) return
 
-    const map = new GeoloniaMap({
+    const map = new window.geolonia.Map({
       container: containerRef.current,
-      style: 'geolonia/basic',
+      // 'geolonia/gsi'（国土地理院ベースの日本語スタイル）を CDN 経由の論理名ではなく
+      // このリポジトリにローカル配置した src/styles/geolonia-gsi.json で渡している。
+      // タイル/スプライトの URL に含まれる YOUR-API-KEY はプレースホルダーのままでよい
+      // （window.geolonia.Map の transformRequest が実キーを自動で差し込む）。
+      // 更新したいときは https://cdn.geolonia.com/style/geolonia/gsi/ja.json を
+      // 再取得して src/styles/geolonia-gsi.json を置き換える。
+      style: gsiStyle,
       center: DEFAULT_CENTER,
       zoom: DEFAULT_ZOOM,
       hash: false,
@@ -72,14 +96,7 @@ export function MapView({ data, selectedId = null, onSelect, colorBy = 'category
         source: SOURCE_ID,
         paint: {
           'circle-radius': ['interpolate', ['linear'], ['zoom'], 9, 3, 14, 7],
-          'circle-color': [
-            'match',
-            ['get', colorBy],
-            '常設給水栓', '#0aa5ff',
-            '地下式給水栓', '#00d4aa',
-            '仮設給水栓', '#ffb020',
-            '#8a8f98',
-          ],
+          'circle-color': circleColor(colorBy),
           'circle-stroke-width': 1,
           'circle-stroke-color': '#ffffff',
         },
@@ -135,7 +152,7 @@ export function MapView({ data, selectedId = null, onSelect, colorBy = 'category
     if (!map) return
 
     const apply = () => {
-      const source = map.getSource(SOURCE_ID) as unknown as GeoJsonSourceLike | undefined
+      const source = map.getSource(SOURCE_ID)
       source?.setData(data)
 
       // 最初にデータが入ったときだけ、全点が入る範囲に寄せる。
@@ -171,6 +188,15 @@ export function MapView({ data, selectedId = null, onSelect, colorBy = 'category
     if (readyRef.current) apply()
     else pendingRef.current.push(apply)
   }, [selectedId])
+
+  if (unavailable) {
+    return (
+      <div className="map-unavailable">
+        地図を読み込めませんでした。ネットワーク接続や広告ブロッカーの設定を確認し、
+        ページを再読み込みしてください。
+      </div>
+    )
+  }
 
   return <div ref={containerRef} className="map" />
 }

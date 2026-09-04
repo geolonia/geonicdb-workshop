@@ -12,9 +12,14 @@
 cat .npmrc     # legacy-peer-deps=true が入っているはず
 ```
 
-## 画面に「データを取得できませんでした」と出る
+## 地図に点が出ない
 
-### `Access denied: no applicable policy`
+### まだ `src/App.tsx` にデータを取得するコードを書いていない
+
+`npm run dev` 直後の画面は**地図だけ**で、データを取得・表示するコードは自分（AI）で
+書くまで存在しません。README の手順 4 のプロンプトで `src/App.tsx` を書き換えたか確認してください。
+
+### `Access denied: no applicable policy`（コンソールや画面にエラーが出る）
 
 `.env.local` の `VITE_GEONICDB_TENANT` が配布カードのテナント名と一致しているか確認してください。
 テナント名が違うと、匿名読み取りを許可したポリシーが適用されず 403 になります。
@@ -23,11 +28,12 @@ cat .npmrc     # legacy-peer-deps=true が入っているはず
 
 ### `0 件` のまま点が出ない
 
+`src/App.tsx` にデータを表示するコードは書いたのに 0 件のままの場合、GeonicDB 側に
 まだデータが入っていません。README の手順 4（CSV → NDJSON → `geonic import`）を実行してください。
 入ったかどうかは CLI で確認できます。
 
 ```bash
-g entities list --type EmergencyWaterSupply --local --count-only
+g entities list --type YOUR_ENTITY_TYPE --local --count-only
 ```
 
 ## 地図が真っ白 / グレーのまま
@@ -58,8 +64,8 @@ g entities list --type EmergencyWaterSupply --local --count-only
 ```bash
 npx geonic auth logout          # 保存済みのログインを消す
 # もしくは一時的に設定を分ける
-HOME=$(mktemp -d) npx geonic entities list --type EmergencyWaterSupply --local \
-  --url https://geonicdb.geolonia.com --service <テナント名> --api-key <キー>
+HOME=$(mktemp -d) npx geonic entities list --type YOUR_ENTITY_TYPE --local \
+  --url https://geonicdb.geolonia.com --service YOUR_TENANT --api-key YOUR_API_KEY
 ```
 
 ## 点が海の上や外国に出る
@@ -70,15 +76,15 @@ CSV の「緯度, 経度」とは逆です。変換スクリプトを直して�
 
 ## 日本語が文字化けする
 
-今回の CSV は UTF-8（BOM 付き）ですが、**名古屋市の他のデータセットは Shift_JIS（CP932）の
-ものもあります**。文字化けしたら変換時にエンコーディングを指定してください。
+CSV が UTF-8（BOM 付き）とは限りません。**Shift_JIS（CP932）のオープンデータもよくあります**。
+文字化けしたら変換時にエンコーディングを指定してください。
 
 ```bash
 iconv -f CP932 -t UTF-8 元ファイル.csv > 変換後.csv
 ```
 
-また、拡張子が `.csv` でも**中身が Excel ファイル（XLSX）**のデータセットが混ざっています
-（例: 名古屋市「公衆トイレ一覧」）。`head` で中身を見て、`PK` で始まっていたら XLSX です。
+また、拡張子が `.csv` でも**中身が Excel ファイル（XLSX）**のデータセットが混ざっていることが
+あります。`head` で中身を見て、`PK` で始まっていたら XLSX です。
 
 ## GitHub Pages が真っ白
 
