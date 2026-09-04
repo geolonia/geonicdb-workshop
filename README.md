@@ -89,7 +89,7 @@ http://localhost:5173 を開くと、**地図だけが表示された画面**が
 表示するコードを書いていないので、これで正常です（エラーも出ません）。
 ここまで来たら第一関門クリアです。
 
-表示位置は `src/App.tsx` の `<div class="geolonia">` の `data-lat` / `data-lng` / `data-zoom`
+表示位置は `index.html` の `<div class="geolonia">` の `data-lat` / `data-lng` / `data-zoom`
 で決まっています。開催地に合わせて変えたいときは、この値を書き換えてください。
 
 ---
@@ -176,9 +176,9 @@ Imported: N succeeded, 0 failed, 0 skipped across N chunk(s).
 
 ```text
 src/App.tsx を書き換えて、起動時に GeonicDB からデータを取得し、地図に表示してください。
-@geolonia/geonicdb-sdk を使って anonymous:true でエンティティを取得し、GeoJSON に変換して
-地図の geolonia.Map インスタンスに addSource / addLayer で表示してください。
-仕様は AGENTS.md に従うこと。
+@geolonia/geonicdb-sdk を使って anonymous:true でエンティティを取得し、GeoJSON に変換して、
+window.geolonia.registerPlugin() で受け取った地図インスタンスに addSource / addLayer で
+表示してください。仕様は AGENTS.md に従うこと。
 ```
 
 うまくいくとブラウザに点が出ます。ここが本日のピークです。

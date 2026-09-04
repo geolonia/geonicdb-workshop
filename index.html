@@ -10,6 +10,21 @@
     <title>オープンデータマップ</title>
   </head>
   <body>
+    <!--
+      地図は静的な HTML として置く（Embed API は script 実行時点の DOM を見て
+      class="geolonia" の div を地図に変換するため、React が後から差し込む
+      要素だと間に合わない）。開催地に合わせて data-lat / data-lng / data-zoom
+      を変える。
+    -->
+    <div
+      class="geolonia"
+      style="position: fixed; inset: 0"
+      data-style="geolonia/gsi"
+      data-lat="35.681236"
+      data-lng="139.767125"
+      data-zoom="14"
+      data-navigation-control="top-right"
+    ></div>
     <div id="root"></div>
     <!-- Geolonia Maps 本体（CDN）。API キーは .env.local の VITE_GEOLONIA_API_KEY から Vite が埋め込む。 -->
     <script src="https://cdn.geolonia.com/v1/embed?geolonia-api-key=%VITE_GEOLONIA_API_KEY%"></script>

@@ -32,11 +32,16 @@
 
 ## 実装上の注意
 
-- 開催地・ズームは `src/App.tsx` の `<div class="geolonia">` の `data-lat` / `data-lng` /
+- 地図は `index.html` の `<div class="geolonia">`（Embed API）として静的に置いてある。
+  React が後から差し込む要素は Embed API の DOM スキャンに間に合わないため、
+  `src/App.tsx` 側に地図用の div を書かないこと。
+- 開催地・ズームは `index.html` の `<div class="geolonia">` の `data-lat` / `data-lng` /
   `data-zoom` で決める。属性の一覧は Geolonia Maps の Embed API ドキュメントを参照。
+- Embed API が作った地図インスタンスを JS から触るときは
+  `window.geolonia.registerPlugin((map) => { ... })` で受け取る。
 - GeonicDB から取得したエンティティを地図に表示するときは、`data-geojson`（GeoJSON の URL を
-  渡す）よりも、`window.geolonia.Map` のインスタンスに対して `addSource` / `addLayer` で
-  動的に描画する方法を優先する（データがブラウザ内で変わるため）。
+  渡す）よりも、地図インスタンスに対して `addSource` / `addLayer` で動的に描画する方法を
+  優先する（データがブラウザ内で変わるため）。
 - エンティティの属性は `{ type, value }` の形（`type` は `Property` / `GeoProperty` /
   `Relationship`）。位置は `location` という名前の `GeoProperty` にする（SDK / Geo-query の既定名）。
 - **座標は `[経度, 緯度]` の順。** 多くの CSV は「緯度, 経度」の順なので入れ替えが必要。
