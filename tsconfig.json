@@ -20,10 +20,7 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
 
-    "types": ["vite/client"],
-    "paths": {
-      "@geolonia/embed/core": ["./node_modules/@geolonia/embed/dist/embed-core.d.ts"]
-    }
+    "types": ["vite/client"]
   },
   "include": ["src", "vite.config.ts"]
 }

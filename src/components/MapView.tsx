@@ -4,20 +4,16 @@
  * ★ このファイルは完成済みです。ワークショップ中は基本的に触らなくて構いません。
  *   （地図の初期化は React だと壊しやすいので、こちらで済ませてあります）
  *
+ * Geolonia Maps 本体は index.html の <script> タグ（CDN）で読み込み済みで、
+ * window.geolonia として使える（型は src/types/geolonia.d.ts）。
+ *
  * 使い方:
+ *   <MapView />                                    // 地図だけ表示
  *   <MapView data={geojson} selectedId={id} onSelect={setId} />
  */
 import { useEffect, useRef } from 'react'
-import { GeoloniaMap, keyring } from '@geolonia/embed/core'
 import { config } from '../lib/config'
 import type { MapCollection } from '../lib/types'
-import type { DataDrivenPropertyValueSpecification } from '@maplibre/maplibre-gl-style-spec'
-
-// YOUR-API-KEY は localhost / GitHub Pages / Vercel / Netlify / Cloudflare Pages で
-// そのまま使える開発用キー。独自ドメインで公開するときだけ実キーに差し替える。
-keyring.apiKey = import.meta.env.VITE_GEOLONIA_API_KEY || 'YOUR-API-KEY'
-// npm から使う場合、stage は script タグから読めないので明示する（既定は 'dev'）。
-keyring.stage = 'v1'
 
 const SOURCE_ID = 'entities'
 const LAYER_ID = 'entities-circle'
@@ -27,36 +23,34 @@ const LAYER_ID_SELECTED = 'entities-selected'
 const DEFAULT_CENTER: [number, number] = [config.map.center.lng, config.map.center.lat]
 const DEFAULT_ZOOM = config.map.zoom
 
+const EMPTY: MapCollection = { type: 'FeatureCollection', features: [] }
+
 type Props = {
-  data: MapCollection
+  data?: MapCollection
   selectedId?: string | null
   onSelect?: (id: string | null) => void
   /** 点の色分けに使う properties のキー。既定は workshop.config.json の map.colorBy。 */
   colorBy?: string
 }
 
-type GeoJsonSourceLike = { setData: (data: MapCollection) => void }
-
-const EMPTY: MapCollection = { type: 'FeatureCollection', features: [] }
-
 /**
  * 色分けの式を組み立てる。
  * workshop.config.json の map.colors が空なら defaultColor の 1 色になる。
  */
-function circleColor(colorBy: string): DataDrivenPropertyValueSpecification<string> {
+function circleColor(colorBy: string): unknown {
   const entries = Object.entries(config.map.colors)
   if (entries.length === 0) return config.map.defaultColor
-  return ['match', ['get', colorBy], ...entries.flat(), config.map.defaultColor] as unknown as DataDrivenPropertyValueSpecification<string>
+  return ['match', ['get', colorBy], ...entries.flat(), config.map.defaultColor]
 }
 
 export function MapView({
-  data,
+  data = EMPTY,
   selectedId = null,
   onSelect,
   colorBy = config.map.colorBy,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const mapRef = useRef<GeoloniaMap | null>(null)
+  const mapRef = useRef<geolonia.Map | null>(null)
   const readyRef = useRef(false)
   const fittedRef = useRef(false)
   /** 地図の load 完了前に届いた更新をためておく。 */
@@ -71,7 +65,7 @@ export function MapView({
   useEffect(() => {
     if (!containerRef.current) return
 
-    const map = new GeoloniaMap({
+    const map = new window.geolonia.Map({
       container: containerRef.current,
       style: 'geolonia/basic',
       center: DEFAULT_CENTER,
@@ -145,7 +139,7 @@ export function MapView({
     if (!map) return
 
     const apply = () => {
-      const source = map.getSource(SOURCE_ID) as unknown as GeoJsonSourceLike | undefined
+      const source = map.getSource(SOURCE_ID)
       source?.setData(data)
 
       // 最初にデータが入ったときだけ、全点が入る範囲に寄せる。

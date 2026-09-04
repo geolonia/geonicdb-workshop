@@ -12,6 +12,8 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Geolonia Maps 本体（CDN）。API キーは .env.local の VITE_GEOLONIA_API_KEY から Vite が埋め込む。 -->
+    <script src="https://cdn.geolonia.com/v1/embed?geolonia-api-key=%VITE_GEOLONIA_API_KEY%"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

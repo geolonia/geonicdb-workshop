@@ -20,5 +20,6 @@ jobs:
         env:
           VITE_GEONICDB_URL: https://geonicdb.geolonia.com
           VITE_GEONICDB_TENANT: ci
+          VITE_GEOLONIA_API_KEY: YOUR-API-KEY
       - name: AI 向けルールの同期を確認 (.cursorrules は AGENTS.md の複製)
         run: diff AGENTS.md .cursorrules
