@@ -21,7 +21,7 @@
 | 必要なもの | 備考 |
 |---|---|
 | Node.js 20 以上 | `node -v` で確認 |
-| GitHub アカウント | テンプレートの複製と公開に使う |
+| GitHub アカウント | テンプレートの複製（自分用リポジトリの作成）に使う |
 | 接続情報カード | 当日配布。GeonicDB の URL とテナント名、API キーが書いてあります |
 
 ### 0-1. GitHub アカウントの取得
@@ -104,8 +104,8 @@ VITE_GEONICDB_TENANT=chusoku_stg
 VITE_GEOLONIA_API_KEY=YOUR-API-KEY
 ```
 
-`VITE_GEOLONIA_API_KEY` はそのままで OK です（`YOUR-API-KEY` は localhost や
-GitHub Pages でそのまま使える開発用キーです）。
+`VITE_GEOLONIA_API_KEY` はそのままで OK です（`YOUR-API-KEY` は localhost で
+そのまま使える開発用キーです）。
 
 ```bash
 npm start
@@ -238,22 +238,6 @@ npm run build
 > 用意してあります。`npm test` でまとめて実行できます（lint → ユニット → E2E の順、
 > E2E は内部でビルドしてローカルサーバーを起動します）。個別に実行したいときは
 > `npm run test:unit` / `npm run test:e2e` を使ってください。
-
----
-
-## 6. インターネットに公開する
-
-GitHub Pages で公開できます。
-
-1. リポジトリの **Settings → Pages → Build and deployment → Source** を **GitHub Actions** にする
-2. `git push` する（`main` への push で自動デプロイされます）
-3. `https://<ユーザー名>.github.io/<リポジトリ名>/` を開く
-
-> `.env.local` は git に入りません（公開されません）。GitHub Pages 用の接続先は
-> リポジトリの **Settings → Secrets and variables → Actions → Variables** に
-> `VITE_GEONICDB_URL` と `VITE_GEONICDB_TENANT` を登録してください。
-> ブラウザ側は匿名の読み取り専用で接続するので、API キーを公開する必要はありません。
-> 書き込みに使う API キーは DPoP（RFC 9449）必須で発行されており、CLI が透過的に処理します。
 
 ---
 
