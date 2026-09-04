@@ -82,7 +82,7 @@ VITE_GEOLONIA_API_KEY=YOUR-API-KEY
 GitHub Pages でそのまま使える開発用キーです）。
 
 ```bash
-npm run dev
+npm start
 ```
 
 http://localhost:5173 を開くと、**対象地域だけが表示された地図**が出ます。まだ `src/App.tsx` に
