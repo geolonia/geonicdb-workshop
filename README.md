@@ -21,11 +21,34 @@
 | 必要なもの | 備考 |
 |---|---|
 | Node.js 20 以上 | `node -v` で確認 |
-| Git / GitHub アカウント | テンプレートの複製と公開に使う |
-| GitHub / Google アカウント | AI（opencode）のサインインに使う |
+| GitHub アカウント | テンプレートの複製と公開に使う |
 | 接続情報カード | 当日配布。GeonicDB の URL とテナント名、API キーが書いてあります |
 
-AI のセットアップ（1 回だけ）:
+### 0-1. GitHub アカウントの取得
+
+すでにアカウントを持っている方はこの手順は不要です。
+
+1. https://github.com/signup を開く
+2. メールアドレス・パスワード・ユーザー名を入力してアカウントを作成する
+3. 届いた確認コードをメールから入力する
+
+### 0-2. geonicdb-cli のインストール
+
+`geonic` は GeonicDB の公式 CLI です。このテンプレートには `devDependencies` として
+同梱済みなので、[1. 自分のリポジトリを作る](#1-自分のリポジトリを作る) で `npm install` を
+実行すればそのまま `npx geonic` で使えます。個別にインストールする手順は不要です。
+
+グローバルにインストールして `npx` なしで使いたい場合だけ、以下を実行してください。
+
+```bash
+npm install -g @geolonia/geonicdb-cli
+geonic --version
+```
+
+### 0-3. opencode のインストール
+
+このワークショップでは AI に地図表示やデータ変換のコードを書かせます。使う AI ツールは
+**opencode**（無料で使えます）です。
 
 ```bash
 # インストール（npm でも入ります: npm install -g opencode-ai）
@@ -40,6 +63,8 @@ opencode
 1. `/connect` と入力して **opencode** を選ぶ
 2. ブラウザで https://opencode.ai/auth を開いてサインインし、API キーをコピー
 3. opencode に戻ってキーを貼る
+
+サインインには GitHub または Google のアカウントを使います。
 
 使うモデルは **Big Pickle**（無料・コンテキスト 200K）です。このリポジトリの
 `opencode.json` で指定済みなので、モデルを選ぶ操作は不要です。
@@ -96,7 +121,8 @@ http://localhost:5173 を開くと、**地図だけが表示された画面**が
 
 ## 3. CLI で GeonicDB に触ってみる
 
-`geonic` は GeonicDB の公式 CLI です（このリポジトリに同梱済み。`npx geonic` で動きます）。
+`geonic`（[0-2. geonicdb-cli のインストール](#0-2-geonicdb-cli-のインストール) 参照）で
+GeonicDB を触ってみます。
 
 ```bash
 # 接続先を保存する（以降 --url を省略できる）
