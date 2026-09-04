@@ -34,11 +34,7 @@
 
 ### 0-2. geonicdb-cli のインストール
 
-`geonic` は GeonicDB の公式 CLI です。このテンプレートには `devDependencies` として
-同梱済みなので、[1. 自分のリポジトリを作る](#1-自分のリポジトリを作る) で `npm install` を
-実行すればそのまま `npx geonic` で使えます。個別にインストールする手順は不要です。
-
-グローバルにインストールして `npx` なしで使いたい場合だけ、以下を実行してください。
+`geonic` は GeonicDB の公式 CLI です。グローバルにインストールします。
 
 ```bash
 npm install -g @geolonia/geonicdb-cli
@@ -127,10 +123,10 @@ GeonicDB を触ってみます。
 
 ```bash
 # 接続先を保存する（以降 --url を省略できる）
-npx geonic config set url https://geonicdb.geolonia.com
+geonic config set url https://geonicdb.geolonia.com
 
 # 自分が誰として認証されているか確認
-npx geonic me --api-key <配布カードの API キー> --service <テナント名>
+geonic me --api-key <配布カードの API キー> --service <テナント名>
 ```
 
 毎回オプションを書くのが面倒なので、環境変数にしておきます。
@@ -138,7 +134,7 @@ npx geonic me --api-key <配布カードの API キー> --service <テナント�
 ```bash
 export GEONIC_API_KEY=<配布カードの API キー>
 export GEONIC_TENANT=<テナント名>
-alias g="npx geonic --api-key $GEONIC_API_KEY --service $GEONIC_TENANT"
+alias g="geonic --api-key $GEONIC_API_KEY --service $GEONIC_TENANT"
 ```
 
 試しに 1 件だけ手で入れて、消してみましょう（エンティティ型名 `Facility` は例です。
