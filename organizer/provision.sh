@@ -21,7 +21,12 @@ case "$TENANT" in
   *[^a-z0-9_]*) echo "テナント名に使えるのは小文字英数字とアンダースコアだけです: $TENANT" >&2; exit 1 ;;
 esac
 URL="${GEONIC_URL:-https://geonicdb.geolonia.com}"
-ENTITY_TYPE="${ENTITY_TYPE:-Facility}"
+# 既定値は workshop.config.json の entityType から読む（無ければ Facility にフォールバック）。
+# ここが workshop.config.json とズレると、匿名読み取りポリシーの対象エンティティ型が
+# 実際にアプリが表示する型と一致しなくなる。
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CONFIG_ENTITY_TYPE="$(jq -r '.entityType // empty' "$SCRIPT_DIR/../workshop.config.json" 2>/dev/null || true)"
+ENTITY_TYPE="${ENTITY_TYPE:-${CONFIG_ENTITY_TYPE:-Facility}}"
 DRY_RUN="${DRY_RUN:-1}"
 
 run() {

@@ -4,12 +4,14 @@
 対象地域・データセットは開催回ごとに変わります（`workshop.config.json` を参照）。
 コードを書く前にこのファイルを最後まで読んでください。
 
-このファイルは opencode が標準で読み込むルールファイルです（`CLAUDE.md` / `.cursorrules` は同じ内容の複製）。
+このファイルは opencode が標準で読み込むルールファイルです。`.cursorrules` はこのファイルと
+同じ内容の複製、`CLAUDE.md` はこのファイルを参照するだけの短いスタブです。
 
 ## スタック
 
 - React 19 + TypeScript + Vite
-- 地図: **Geolonia Maps**（`@geolonia/embed` の `/core` エントリ）
+- 地図: **Geolonia Maps**（`index.html` の `<script>` タグで CDN から読み込み。`window.geolonia`
+  として使う。型は `src/types/geolonia.d.ts` の自前アンビエント宣言）
 - データ: **GeonicDB**（FIWARE Orion 互換 Context Broker、NGSI-LD API）
 - SDK: `@geolonia/geonicdb-sdk`（ブラウザ側は匿名の読み取り専用）
 - データ投入: `geonicdb-cli`（コマンド名は `geonic`）

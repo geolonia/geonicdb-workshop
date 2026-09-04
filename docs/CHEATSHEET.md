@@ -15,13 +15,13 @@ alias g="npx geonic --url https://geonicdb.geolonia.com --api-key $GEONIC_API_KE
 | 自分の認証状態を見る | `g me` |
 | サーバーの生死確認 | `npx geonic health --url https://geonicdb.geolonia.com` |
 | 1 件作る | `g entities create '{"id":"...","type":"...","name":{"type":"Property","value":"..."}}'` |
-| 一覧（型で絞る） | `g entities list --type <ENTITY_TYPE> --local` |
-| 一覧を GeoJSON で | `g entities list --type <ENTITY_TYPE> --local -f geojson` |
-| 一覧を表で | `g entities list --type <ENTITY_TYPE> --local -f table` |
-| 1 件取得 | `g entities get urn:ngsi-ld:<ENTITY_TYPE>:1` |
-| 属性を更新 | `g entities update <id> '{"name":{"type":"Property","value":"新しい名前"}}'` |
-| 1 件削除 | `g entities delete <id>` |
-| 件数だけ数える | `g entities list --type <ENTITY_TYPE> --local --count-only` |
+| 一覧（型で絞る） | `g entities list --type YOUR_ENTITY_TYPE --local` |
+| 一覧を GeoJSON で | `g entities list --type YOUR_ENTITY_TYPE --local -f geojson` |
+| 一覧を表で | `g entities list --type YOUR_ENTITY_TYPE --local -f table` |
+| 1 件取得 | `g entities get urn:ngsi-ld:YOUR_ENTITY_TYPE:1` |
+| 属性を更新 | `g entities update YOUR_ENTITY_ID '{"name":{"type":"Property","value":"新しい名前"}}'` |
+| 1 件削除 | `g entities delete YOUR_ENTITY_ID` |
+| 件数だけ数える | `g entities list --type YOUR_ENTITY_TYPE --local --count-only` |
 | NDJSON を一括投入 | `g import entities.ndjson --batch-size 100` |
 | 投入内容を事前確認 | `g import entities.ndjson --dry-run` |
 | 失敗行を回収して再送 | `g import entities.ndjson --continue-on-error --errors-out failed.ndjson` |
@@ -35,8 +35,8 @@ alias g="npx geonic --url https://geonicdb.geolonia.com --api-key $GEONIC_API_KE
 
 ```jsonc
 {
-  "id": "urn:ngsi-ld:<ENTITY_TYPE>:1",  // URN 形式が推奨
-  "type": "<ENTITY_TYPE>",
+  "id": "urn:ngsi-ld:YOUR_ENTITY_TYPE:1",  // URN 形式が推奨
+  "type": "YOUR_ENTITY_TYPE",
   "name": { "type": "Property", "value": "○○センター" },
   "capacity": { "type": "Property", "value": 100 },        // 数値もそのまま value に
   "location": {
