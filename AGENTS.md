@@ -21,6 +21,11 @@
 4. **API キーには DPoP（RFC 9449）を使用する。** ワークショップで配布する API キーは
    `--dpop-required` 付きで発行済み。CLI/SDK が透過的に処理するため、アプリ側の追加実装は不要。
 
+## 参考資料
+
+- GeonicDB の使い方: https://geonicdb.geolonia.com/llms.txt
+- Geolonia Maps の使い方: https://docs.geolonia.com/llms.txt
+
 ## スタック
 
 - React 19 + TypeScript + Vite

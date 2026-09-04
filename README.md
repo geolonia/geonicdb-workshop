@@ -207,6 +207,11 @@ npm run lint
 npm run build
 ```
 
+> ユニットテスト（Vitest）と、Cucumber による基礎的な E2E テスト（地図が表示されるかの確認）も
+> 用意してあります。`npm test` でまとめて実行できます（lint → ユニット → E2E の順、
+> E2E は内部でビルドしてローカルサーバーを起動します）。個別に実行したいときは
+> `npm run test:unit` / `npm run test:e2e` を使ってください。
+
 ---
 
 ## 6. インターネットに公開する
