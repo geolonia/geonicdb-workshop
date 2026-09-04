@@ -1,9 +1,10 @@
-# 名古屋市オープンデータ可視化ワークショップ
+# オープンデータ可視化ワークショップ
 
-名古屋市のオープンデータを **GeonicDB**（FIWARE Orion 互換の Context Broker）に取り込み、
+対象のオープンデータを **GeonicDB**（FIWARE Orion 互換の Context Broker）に取り込み、
 **Geolonia Maps** の地図で可視化する Web アプリを、AI にコードを書かせながら作ります。
 
-作るもの: 名古屋市の**応急給水施設 617 か所**（災害時に水をもらえる場所）のマップ。
+対象地域・データセットは開催回ごとに異なります。当日の内容は
+[`workshop.config.json`](workshop.config.json) と主催者から配布される資料で確認してください。
 
 - 地図は **Geolonia Maps**（`@geolonia/embed`）
 - データの投入は **geonicdb-cli**（`geonic`）
@@ -84,7 +85,7 @@ GitHub Pages でそのまま使える開発用キーです）。
 npm run dev
 ```
 
-http://localhost:5173 を開くと、**名古屋の地図**と「データを取得できませんでした」が出ます。
+http://localhost:5173 を開くと、**対象地域の地図**と「データを取得できませんでした」が出ます。
 データがまだ空なので正常です。ここまで来たら第一関門クリアです。
 
 ---
@@ -109,20 +110,21 @@ export GEONIC_TENANT=<テナント名>
 alias g="npx geonic --api-key $GEONIC_API_KEY --service $GEONIC_TENANT"
 ```
 
-試しに 1 件だけ手で入れて、消してみましょう。
+試しに 1 件だけ手で入れて、消してみましょう（`workshop.config.json` の `entityType` を
+`Facility` のところに読み替えてください）。
 
 ```bash
 g entities create '{
-  "id": "urn:ngsi-ld:EmergencyWaterSupply:test:1",
-  "type": "EmergencyWaterSupply",
-  "name": { "type": "Property", "value": "テスト給水栓" },
+  "id": "urn:ngsi-ld:Facility:test:1",
+  "type": "Facility",
+  "name": { "type": "Property", "value": "テスト施設" },
   "location": { "type": "GeoProperty",
-    "value": { "type": "Point", "coordinates": [136.9066, 35.1815] } }
+    "value": { "type": "Point", "coordinates": [139.767, 35.681] } }
 }'
 
-g entities list --type EmergencyWaterSupply --local
-g entities list --type EmergencyWaterSupply --local -f geojson   # GeoJSON でも出せる
-g entities delete urn:ngsi-ld:EmergencyWaterSupply:test:1
+g entities list --type Facility --local
+g entities list --type Facility --local -f geojson   # GeoJSON でも出せる
+g entities delete urn:ngsi-ld:Facility:test:1
 ```
 
 `{ "type": "Property", "value": ... }` という書き方が NGSI-LD の作法です。
@@ -132,22 +134,19 @@ g entities delete urn:ngsi-ld:EmergencyWaterSupply:test:1
 
 ## 4. 本番データを入れる（ここが山場・AI に書かせます）
 
-`data/nagoya-emergency-water-supply.csv` に名古屋市が公開している CSV が入っています。
+`data/` に対象データの CSV が入っています（配置方法は [data/README.md](data/README.md) 参照）。
+まずは中身を確認します。
 
 ```bash
-head -3 data/nagoya-emergency-water-supply.csv
-```
-
-```text
-ID,施設名,施設名フリガナ,施設種別,区・町名,住所,緯度,経度
-1,東山配水場,ヒガシヤマハイスイジョウ,常設給水栓,名古屋市千種区,田代町四観音道西,35.17342437,136.9550014
+ls data/
+head -3 data/<データセットのファイル名>.csv
 ```
 
 CLI が読み込めるのは **NDJSON（1 行 1 エンティティ）** なので、CSV を変換する必要があります。
 この変換スクリプトを AI に書かせてください。`opencode` を起動して、たとえばこう頼みます。
 
 ```text
-data/nagoya-emergency-water-supply.csv を NGSI-LD の NDJSON に変換する Node スクリプトを
+data/<データセットのファイル名>.csv を NGSI-LD の NDJSON に変換する Node スクリプトを
 scripts/csv-to-ngsild.mjs に作ってください。仕様は AGENTS.md の「データモデル」に従うこと。
 外部パッケージは使わず、node 標準モジュールだけで書いてください。
 ```
@@ -155,18 +154,18 @@ scripts/csv-to-ngsild.mjs に作ってください。仕様は AGENTS.md の「�
 できたら実行して、投入します。
 
 ```bash
-node scripts/csv-to-ngsild.mjs data/nagoya-emergency-water-supply.csv > entities.ndjson
-wc -l entities.ndjson          # 617 になるはず
+node scripts/csv-to-ngsild.mjs data/<データセットのファイル名>.csv > entities.ndjson
+wc -l entities.ndjson
 
 g import entities.ndjson --dry-run     # まず何が送られるか確認
 g import entities.ndjson --batch-size 100
 ```
 
 ```text
-Imported: 617 succeeded, 0 failed, 0 skipped across 7 chunk(s).
+Imported: N succeeded, 0 failed, 0 skipped across N chunk(s).
 ```
 
-ブラウザに戻ると **617 件**の点が地図に出ます。ここが本日のメインイベントです。
+ブラウザに戻ると点が地図に出ます。ここが本日のメインイベントです。
 
 > `--batch-size` は無料プランの上限（100 件/リクエスト）に合わせています。
 > 大きくすると 400 が返ります。
@@ -179,14 +178,13 @@ Imported: 617 succeeded, 0 failed, 0 skipped across 7 chunk(s).
 AI に日本語で頼んでいけば進みます。頼み方の例:
 
 ```text
-施設種別（常設給水栓 / 地下式給水栓 / 仮設給水栓）で表示を絞り込むチェックボックスを
-サイドパネルに追加してください。件数バッジも出してください。
+種別で表示を絞り込むチェックボックスをサイドパネルに追加してください。
+件数バッジも出してください。
 ```
 
 ```text
 「現在地から近い順」ボタンを付けてください。ブラウザの位置情報を取り、
 src/lib/geonicdb.ts の fetchNearby() を使って半径 3km 以内を近い順に一覧表示します。
-位置情報が拒否された場合は名古屋市役所を現在地として扱ってください。
 ```
 
 変更したら必ず通しておきます。
@@ -224,9 +222,10 @@ GitHub Pages で公開できます。
 
 ## データの出典
 
-名古屋市「応急給水施設一覧表」（[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.ja)）
-— 詳細は [data/README.md](data/README.md)
+対象データの出典・ライセンスは [data/README.md](data/README.md) と、画面右下の
+出典表示（`workshop.config.json` の `attribution`）を参照してください。
 
 ## ライセンス
 
-このテンプレートのコードは MIT ライセンスです。
+このテンプレートのコードは MIT ライセンスです（同梱データがある場合、データ自体の
+ライセンスは別途 `data/README.md` に従います）。

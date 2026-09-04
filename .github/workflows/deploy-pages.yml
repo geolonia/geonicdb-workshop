@@ -26,7 +26,7 @@ jobs:
   build:
     # テンプレート本体では動かさない（Pages を有効化していないため必ず失敗する）。
     # 「Use this template」で作られた各自のリポジトリでだけ走る。
-    if: github.repository != 'geolonia/geonicdb-workshop-nagoya'
+    if: github.repository != 'geolonia/geonicdb-workshop'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

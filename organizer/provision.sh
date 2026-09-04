@@ -21,7 +21,7 @@ case "$TENANT" in
   *[^a-z0-9_]*) echo "テナント名に使えるのは小文字英数字とアンダースコアだけです: $TENANT" >&2; exit 1 ;;
 esac
 URL="${GEONIC_URL:-https://geonicdb.geolonia.com}"
-ENTITY_TYPE="${ENTITY_TYPE:-EmergencyWaterSupply}"
+ENTITY_TYPE="${ENTITY_TYPE:-Facility}"
 DRY_RUN="${DRY_RUN:-1}"
 
 run() {

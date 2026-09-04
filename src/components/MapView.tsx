@@ -9,7 +9,9 @@
  */
 import { useEffect, useRef } from 'react'
 import { GeoloniaMap, keyring } from '@geolonia/embed/core'
-import type { FacilityCollection } from '../lib/types'
+import { config } from '../lib/config'
+import type { MapCollection } from '../lib/types'
+import type { DataDrivenPropertyValueSpecification } from '@maplibre/maplibre-gl-style-spec'
 
 // YOUR-API-KEY は localhost / GitHub Pages / Vercel / Netlify / Cloudflare Pages で
 // そのまま使える開発用キー。独自ドメインで公開するときだけ実キーに差し替える。
@@ -17,27 +19,42 @@ keyring.apiKey = import.meta.env.VITE_GEOLONIA_API_KEY || 'YOUR-API-KEY'
 // npm から使う場合、stage は script タグから読めないので明示する（既定は 'dev'）。
 keyring.stage = 'v1'
 
-const SOURCE_ID = 'facilities'
-const LAYER_ID = 'facilities-circle'
-const LAYER_ID_SELECTED = 'facilities-selected'
+const SOURCE_ID = 'entities'
+const LAYER_ID = 'entities-circle'
+const LAYER_ID_SELECTED = 'entities-selected'
 
-/** 名古屋市役所あたり。 */
-const DEFAULT_CENTER: [number, number] = [136.9066, 35.1815]
-const DEFAULT_ZOOM = 11
+/** データが 0 件のときの初期表示。開催地に合わせて workshop.config.json で変える。 */
+const DEFAULT_CENTER: [number, number] = [config.map.center.lng, config.map.center.lat]
+const DEFAULT_ZOOM = config.map.zoom
 
 type Props = {
-  data: FacilityCollection
+  data: MapCollection
   selectedId?: string | null
   onSelect?: (id: string | null) => void
-  /** 点の色分けに使う properties のキー。既定は category。 */
-  colorBy?: keyof FacilityCollection['features'][number]['properties']
+  /** 点の色分けに使う properties のキー。既定は workshop.config.json の map.colorBy。 */
+  colorBy?: string
 }
 
-type GeoJsonSourceLike = { setData: (data: FacilityCollection) => void }
+type GeoJsonSourceLike = { setData: (data: MapCollection) => void }
 
-const EMPTY: FacilityCollection = { type: 'FeatureCollection', features: [] }
+const EMPTY: MapCollection = { type: 'FeatureCollection', features: [] }
 
-export function MapView({ data, selectedId = null, onSelect, colorBy = 'category' }: Props) {
+/**
+ * 色分けの式を組み立てる。
+ * workshop.config.json の map.colors が空なら defaultColor の 1 色になる。
+ */
+function circleColor(colorBy: string): DataDrivenPropertyValueSpecification<string> {
+  const entries = Object.entries(config.map.colors)
+  if (entries.length === 0) return config.map.defaultColor
+  return ['match', ['get', colorBy], ...entries.flat(), config.map.defaultColor] as unknown as DataDrivenPropertyValueSpecification<string>
+}
+
+export function MapView({
+  data,
+  selectedId = null,
+  onSelect,
+  colorBy = config.map.colorBy,
+}: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<GeoloniaMap | null>(null)
   const readyRef = useRef(false)
@@ -72,14 +89,7 @@ export function MapView({ data, selectedId = null, onSelect, colorBy = 'category
         source: SOURCE_ID,
         paint: {
           'circle-radius': ['interpolate', ['linear'], ['zoom'], 9, 3, 14, 7],
-          'circle-color': [
-            'match',
-            ['get', colorBy],
-            '常設給水栓', '#0aa5ff',
-            '地下式給水栓', '#00d4aa',
-            '仮設給水栓', '#ffb020',
-            '#8a8f98',
-          ],
+          'circle-color': circleColor(colorBy),
           'circle-stroke-width': 1,
           'circle-stroke-color': '#ffffff',
         },

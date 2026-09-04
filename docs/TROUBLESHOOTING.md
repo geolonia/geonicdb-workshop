@@ -27,7 +27,7 @@ cat .npmrc     # legacy-peer-deps=true が入っているはず
 入ったかどうかは CLI で確認できます。
 
 ```bash
-g entities list --type EmergencyWaterSupply --local --count-only
+g entities list --type <対象の entityType> --local --count-only
 ```
 
 ## 地図が真っ白 / グレーのまま
@@ -58,7 +58,7 @@ g entities list --type EmergencyWaterSupply --local --count-only
 ```bash
 npx geonic auth logout          # 保存済みのログインを消す
 # もしくは一時的に設定を分ける
-HOME=$(mktemp -d) npx geonic entities list --type EmergencyWaterSupply --local \
+HOME=$(mktemp -d) npx geonic entities list --type <対象の entityType> --local \
   --url https://geonicdb.geolonia.com --service <テナント名> --api-key <キー>
 ```
 
@@ -70,15 +70,15 @@ CSV の「緯度, 経度」とは逆です。変換スクリプトを直して�
 
 ## 日本語が文字化けする
 
-今回の CSV は UTF-8（BOM 付き）ですが、**名古屋市の他のデータセットは Shift_JIS（CP932）の
-ものもあります**。文字化けしたら変換時にエンコーディングを指定してください。
+CSV が UTF-8（BOM 付き）とは限りません。**Shift_JIS（CP932）のオープンデータもよくあります**。
+文字化けしたら変換時にエンコーディングを指定してください。
 
 ```bash
 iconv -f CP932 -t UTF-8 元ファイル.csv > 変換後.csv
 ```
 
-また、拡張子が `.csv` でも**中身が Excel ファイル（XLSX）**のデータセットが混ざっています
-（例: 名古屋市「公衆トイレ一覧」）。`head` で中身を見て、`PK` で始まっていたら XLSX です。
+また、拡張子が `.csv` でも**中身が Excel ファイル（XLSX）**のデータセットが混ざっていることが
+あります。`head` で中身を見て、`PK` で始まっていたら XLSX です。
 
 ## GitHub Pages が真っ白
 
