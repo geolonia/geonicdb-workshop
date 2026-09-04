@@ -32,6 +32,10 @@
 
 ## 実装上の注意
 
+- **このリポジトリ自体（テンプレート本体）に変更を加える場合は、必ず git worktree を作成して
+  その中で作業する**（例: `git worktree add .worktrees/<slug> -b <branch>`）。メインの
+  チェックアウトを直接編集しない。参加者が「Use this template」で複製した自分のリポジトリでの
+  作業には適用されない。
 - **`src/components/MapView.tsx` は完成済み。** 原則として書き換えない。地図の見た目
   （レイヤーの色・半径など）を変える必要があるときだけ、そのファイル内の `paint` を編集する。
   色分けのルールは `workshop.config.json` の `map.colors` / `map.defaultColor` で調整できる。
