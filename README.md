@@ -135,27 +135,25 @@ g entities delete urn:ngsi-ld:Facility:test:1
 
 ## 4. 本番データを入れる（ここが山場・AI に書かせます）
 
-`data/` に対象データの CSV が入っています（配置方法は [data/README.md](data/README.md) 参照）。
-まずは中身を確認します。
+主催者から配布された CSV をリポジトリ直下に置き、中身を確認します。
 
 ```bash
-ls data/
-head -3 data/<データセットのファイル名>.csv
+head -3 <データセットのファイル名>.csv
 ```
 
 CLI が読み込めるのは **NDJSON（1 行 1 エンティティ）** なので、CSV を変換する必要があります。
 この変換スクリプトを AI に書かせてください。`opencode` を起動して、たとえばこう頼みます。
 
 ```text
-data/<データセットのファイル名>.csv を NGSI-LD の NDJSON に変換する Node スクリプトを
-scripts/csv-to-ngsild.mjs に作ってください。仕様は AGENTS.md の「データモデル」に従うこと。
+<データセットのファイル名>.csv を NGSI-LD の NDJSON に変換する Node スクリプトを
+scripts/csv-to-ngsild.mjs に作ってください。仕様は AGENTS.md と workshop.config.json に従うこと。
 外部パッケージは使わず、node 標準モジュールだけで書いてください。
 ```
 
 できたら実行して、投入します。
 
 ```bash
-node scripts/csv-to-ngsild.mjs data/<データセットのファイル名>.csv > entities.ndjson
+node scripts/csv-to-ngsild.mjs <データセットのファイル名>.csv > entities.ndjson
 wc -l entities.ndjson
 
 g import entities.ndjson --dry-run     # まず何が送られるか確認
@@ -227,18 +225,12 @@ GitHub Pages で公開できます。
 
 ---
 
-## 困ったときは
-
-- [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) — エラーメッセージ別の対処
-- [docs/CHEATSHEET.md](docs/CHEATSHEET.md) — `geonic` コマンドと NGSI-LD の早見表
-- [docs/WORKSHOP.md](docs/WORKSHOP.md) — 当日の進行
-
 ## データの出典
 
-対象データの出典・ライセンスは [data/README.md](data/README.md) と、画面右下の
-出典表示（`workshop.config.json` の `attribution`）を参照してください。
+対象データの出典・ライセンスは、主催者の配布資料と画面右下の出典表示
+（`workshop.config.json` の `attribution`）を参照してください。
 
 ## ライセンス
 
-このテンプレートのコードは MIT ライセンスです（同梱データがある場合、データ自体の
-ライセンスは別途 `data/README.md` に従います）。
+このテンプレートのコードは MIT ライセンスです。配布データ自体のライセンスは
+主催者の案内に従ってください。
