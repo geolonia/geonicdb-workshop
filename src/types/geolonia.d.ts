@@ -10,7 +10,7 @@ type LngLatLike = [number, number]
 
 type GeoloniaMapOptions = {
   container: string | HTMLElement
-  style?: string
+  style?: string | Record<string, unknown>
   center?: LngLatLike
   zoom?: number
   hash?: boolean

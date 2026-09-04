@@ -91,10 +91,13 @@ run geonic admin policies create "{
 }" --service "$TENANT"
 
 # 4. API キー（参加者に配る。origins は '*' = 非ブラウザ含め全許可）
+#    --dpop-required を付ける: このキーが漏れても、DPoP (RFC 9449) で紐付いた鍵ペアが
+#    無ければ第三者が再利用できない。
 run geonic admin api-keys create \
   --name "workshop-$TENANT" \
   --policy "cli-rw-$TENANT" \
   --origins '*' \
+  --dpop-required \
   ${TENANT_ID:+--tenant-id "$TENANT_ID"} \
   --service "$TENANT"
 

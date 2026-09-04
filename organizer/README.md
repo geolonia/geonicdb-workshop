@@ -11,7 +11,9 @@
   エンティティ 1,000 件を全員で取り合い、`import` が集中する 1:20 前後で詰まります。
 - ブラウザ側は**匿名の読み取り専用**。フロントに API キーを置かないので、
   参加者が成果物を GitHub Pages に公開しても秘密が漏れません。
-- 書き込み（`geonic import`）は **API キー**で行います。
+- 書き込み（`geonic import`）は **API キー**で行います。**このワークショップの API キーは
+  DPoP（RFC 9449）必須**で発行します（`provision.sh` の `--dpop-required`）。DPoP のハンドシェイクは
+  `geonic` CLI が透過的に処理するため、主催者・参加者とも追加の作業は不要です。
 
 必要な権限: staging（`https://geonicdb.geolonia.com`）の `super_admin`。
 

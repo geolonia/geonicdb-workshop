@@ -223,6 +223,7 @@ GitHub Pages で公開できます。
 > リポジトリの **Settings → Secrets and variables → Actions → Variables** に
 > `VITE_GEONICDB_URL` と `VITE_GEONICDB_TENANT` を登録してください。
 > ブラウザ側は匿名の読み取り専用で接続するので、API キーを公開する必要はありません。
+> 書き込みに使う API キーは DPoP（RFC 9449）必須で発行されており、CLI が透過的に処理します。
 
 ---
 

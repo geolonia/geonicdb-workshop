@@ -4,6 +4,9 @@
 
 毎回オプションを書かずに済むよう、最初にこれを実行しておくと楽です。
 
+> 配布された API キーは DPoP（RFC 9449）必須で発行されています。`geonic` が透過的に
+> 処理するので、意識する必要はありません。
+
 ```bash
 export GEONIC_API_KEY=<配布カードの API キー>
 export GEONIC_TENANT=<テナント名>

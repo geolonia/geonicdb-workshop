@@ -14,6 +14,7 @@
 import { useEffect, useRef } from 'react'
 import { config } from '../lib/config'
 import type { MapCollection } from '../lib/types'
+import gsiStyle from '../styles/geolonia-gsi.json'
 
 const SOURCE_ID = 'entities'
 const LAYER_ID = 'entities-circle'
@@ -67,7 +68,13 @@ export function MapView({
 
     const map = new window.geolonia.Map({
       container: containerRef.current,
-      style: 'geolonia/basic',
+      // 'geolonia/gsi'（国土地理院ベースの日本語スタイル）を CDN 経由の論理名ではなく
+      // このリポジトリにローカル配置した src/styles/geolonia-gsi.json で渡している。
+      // タイル/スプライトの URL に含まれる YOUR-API-KEY はプレースホルダーのままでよい
+      // （window.geolonia.Map の transformRequest が実キーを自動で差し込む）。
+      // 更新したいときは https://cdn.geolonia.com/style/geolonia/gsi/ja.json を
+      // 再取得して src/styles/geolonia-gsi.json を置き換える。
+      style: gsiStyle,
       center: DEFAULT_CENTER,
       zoom: DEFAULT_ZOOM,
       hash: false,
