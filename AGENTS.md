@@ -15,8 +15,8 @@
    決め打ちや別データソースへの差し替えをしないこと。アクセスは `src/lib/geonicdb.ts` に集約する
    （コンポーネントから直接 `fetch` しない）。
 3. **適切な XACML ポリシーを適用する。** 匿名ロールは読み取り専用（GET のみ）、書き込みは
-   API キー経由のみ。ポリシーの発行・変更は `organizer/provision.sh` が担う（テナントごとに
-   `tenantId` を必須にしている。省略すると全テナントに効くポリシーになるため削らないこと）。
+   API キー経由のみ。ポリシーは主催者がテナントごとに発行済み（`tenantId` 必須）。アプリ側で
+   ポリシーを書き換えないこと。
 4. **API キーには DPoP（RFC 9449）を使用する。** ワークショップで配布する API キーは
    `--dpop-required` 付きで発行済み。CLI/SDK が透過的に処理するため、アプリ側の追加実装は不要。
 
@@ -27,15 +27,11 @@
   として使う。型は `src/types/geolonia.d.ts`）
 - データ: GeonicDB（FIWARE Orion 互換 Context Broker、NGSI-LD API）、SDK は
   `@geolonia/geonicdb-sdk`（ブラウザ側は匿名の読み取り専用）
-- データ投入: `geonicdb-cli`（コマンド名は `geonic`。使い方は `docs/CHEATSHEET.md` 参照）
+- データ投入: `geonicdb-cli`（コマンド名は `geonic`）
 - 開催回ごとの設定: `workshop.config.json`（`src/lib/config.ts` 経由で読む）
 
 ## 実装上の注意
 
-- **このリポジトリ自体（テンプレート本体）に変更を加える場合は、必ず git worktree を作成して
-  その中で作業する**（例: `git worktree add .worktrees/<slug> -b <branch>`）。メインの
-  チェックアウトを直接編集しない。参加者が「Use this template」で複製した自分のリポジトリでの
-  作業には適用されない。
 - **`src/components/MapView.tsx` は完成済み。** 原則として書き換えない。地図の見た目
   （レイヤーの色・半径など）を変える必要があるときだけ、そのファイル内の `paint` を編集する。
   色分けのルールは `workshop.config.json` の `map.colors` / `map.defaultColor` で調整できる。
@@ -45,11 +41,11 @@
 - **座標は `[経度, 緯度]` の順。** 多くの CSV は「緯度, 経度」の順なので入れ替えが必要。
   ここを間違えると点が海の上や外国に出る。
 - 無料プラン（T0）の上限はエンティティ **1,000 件**・1 リクエスト **100 件**・ボディ 512 KB。
-  超えるコードを書かないこと（`data/README.md` 参照）。
+  超えるコードを書かないこと。
 - 対象地域・データセット名をコードやドキュメントに決め打ちで書かない。
   `workshop.config.json` に集約し、それ以外はそこを参照する。
 - API キーや秘密情報をコードに書かない。`.env.local` を git に追加しない。
 - 変更後は `npm run lint` と `npm run build` を通す（`noUnusedLocals` が有効）。
 - コメントは日本語で、既存ファイルの粒度に合わせて書く。
 - CSV を NDJSON に変換するスクリプトは自分で書く（`scripts/csv-to-ngsild.mjs`、node 標準
-  モジュールのみ、外部パッケージ禁止）。`data/` の CSV 自体は書き換えない。
+  モジュールのみ、外部パッケージ禁止）。配布 CSV 自体は書き換えない。
