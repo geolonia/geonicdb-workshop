@@ -11,7 +11,7 @@
  *   <MapView />                                    // 地図だけ表示
  *   <MapView data={geojson} selectedId={id} onSelect={setId} />
  */
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { config } from '../lib/config'
 import type { MapCollection } from '../lib/types'
 import gsiStyle from '../styles/geolonia-gsi.json'
@@ -61,10 +61,16 @@ export function MapView({
   useEffect(() => {
     onSelectRef.current = onSelect
   }, [onSelect])
+  // index.html の <script> タグ（CDN）はモジュールスクリプトより先に同期実行されるため、
+  // マウント時点で window.geolonia の有無が確定している（effect を使わずに判定できる）。
+  const [unavailable] = useState(() => !window.geolonia?.Map)
 
   // 地図の生成は一度だけ。
   useEffect(() => {
     if (!containerRef.current) return
+    // ネットワーク不通・広告ブロッカー等で CDN スクリプトが読み込めなかった場合。
+    // 呼び出し側にエラーを投げさせず、地図の代わりにメッセージを表示する（下の unavailable 分岐）。
+    if (!window.geolonia?.Map) return
 
     const map = new window.geolonia.Map({
       container: containerRef.current,
@@ -182,6 +188,15 @@ export function MapView({
     if (readyRef.current) apply()
     else pendingRef.current.push(apply)
   }, [selectedId])
+
+  if (unavailable) {
+    return (
+      <div className="map-unavailable">
+        地図を読み込めませんでした。ネットワーク接続や広告ブロッカーの設定を確認し、
+        ページを再読み込みしてください。
+      </div>
+    )
+  }
 
   return <div ref={containerRef} className="map" />
 }

@@ -50,7 +50,9 @@ declare global {
   }
 
   interface Window {
-    geolonia: typeof geolonia
+    // index.html の <script> タグ（CDN）が読み込めなかった場合（ネットワーク不通・
+    // 広告ブロッカー等）は未定義になりうるため、呼び出し側で存在チェックが必要。
+    geolonia?: typeof geolonia
   }
 }
 
