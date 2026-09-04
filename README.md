@@ -95,11 +95,12 @@ npm install
 cp .env.example .env.local
 ```
 
-`.env.local` を開き、配布カードの値を貼ります。
+`.env.local` にはデフォルトのテナント名 `chusoku_stg` が入っています。配布カードで
+別のテナント名が指定されていたら、そちらに書き換えてください。
 
 ```bash
 VITE_GEONICDB_URL=https://geonicdb.geolonia.com
-VITE_GEONICDB_TENANT=あなたのテナント名
+VITE_GEONICDB_TENANT=chusoku_stg
 VITE_GEOLONIA_API_KEY=YOUR-API-KEY
 ```
 
