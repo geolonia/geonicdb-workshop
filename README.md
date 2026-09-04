@@ -34,12 +34,26 @@
 
 ### 0-2. geonicdb-cli のインストール
 
-`geonic` は GeonicDB の公式 CLI です。グローバルにインストールします。
+`geonic` は GeonicDB の公式 CLI です。グローバルにインストールしたら、
+そのままログインまで済ませます。事前に案内されたメールアドレスとパスワードを使います。
 
 ```bash
+# インストール
 npm install -g @geolonia/geonicdb-cli
 geonic --version
+
+# 接続先を保存する（以降 --url を省略できる）
+geonic config set url https://geonicdb.geolonia.com
+
+# ログイン（メールアドレス・パスワードを対話的に聞かれます）
+geonic auth login --tenant chusoku_stg
+
+# 自分が誰として認証されているか確認
+geonic me
 ```
+
+ログインに成功すると、トークンとテナント名が設定に保存されるので、以降のコマンドに
+`--api-key` や `--service` を付ける必要はありません。
 
 ### 0-3. opencode のインストール
 
@@ -83,6 +97,13 @@ cd <リポジトリ名>
 npm install
 ```
 
+最後に、このディレクトリの中で opencode を起動します（`AGENTS.md` など
+プロジェクトの設定を読み込ませるため、リポジトリの中で起動することが重要です）。
+
+```bash
+opencode
+```
+
 ---
 
 ## 2. 接続先を設定して地図を出す
@@ -116,27 +137,10 @@ http://localhost:5173 を開くと、**地図だけが表示された画面**が
 
 ---
 
-## 3. CLI で GeonicDB にログインする
+## 3. CLI で GeonicDB に触ってみる
 
-`geonic`（[0-2. geonicdb-cli のインストール](#0-2-geonicdb-cli-のインストール) 参照）で
-GeonicDB にログインします。事前に案内されたメールアドレスとパスワードを使います。
-
-```bash
-# 接続先を保存する（以降 --url を省略できる）
-geonic config set url https://geonicdb.geolonia.com
-
-# ログイン（メールアドレス・パスワードを対話的に聞かれます）
-geonic auth login --tenant chusoku_stg
-```
-
-ログインに成功すると、トークンとテナント名が設定に保存されるので、以降のコマンドに
-`--api-key` や `--service` を付ける必要はありません。
-
-```bash
-geonic me   # 自分が誰として認証されているか確認
-```
-
-試しに 1 件だけ手で入れて、消してみましょう（エンティティ型名 `Facility` は例です。
+`geonic`（[0-2. geonicdb-cli のインストール](#0-2-geonicdb-cli-のインストール) で
+ログイン済み）を使って、試しに 1 件だけ手で入れて、消してみましょう（エンティティ型名 `Facility` は例です。
 実際に使う型名は主催者の資料に従ってください）。
 
 ```bash
