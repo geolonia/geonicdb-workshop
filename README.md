@@ -22,7 +22,7 @@
 |---|---|
 | Node.js 20 以上 | `node -v` で確認 |
 | GitHub アカウント | テンプレートの複製（自分用リポジトリの作成）に使う |
-| 接続情報カード | 当日配布。GeonicDB の URL とテナント名、API キーが書いてあります |
+| GeonicDB のログイン情報 | 主催者から事前に案内済み（ログイン用メールアドレス・パスワード） |
 
 ### 0-1. GitHub アカウントの取得
 
@@ -91,8 +91,8 @@ npm install
 cp .env.example .env.local
 ```
 
-`.env.local` にはデフォルトのテナント名 `chusoku_stg` が入っています。配布カードで
-別のテナント名が指定されていたら、そちらに書き換えてください。
+`.env.local` にはデフォルトのテナント名 `chusoku_stg` が入っています。主催者から
+別のテナント名が案内されていたら、そちらに書き換えてください。
 
 ```bash
 VITE_GEONICDB_URL=https://geonicdb.geolonia.com
@@ -116,32 +116,31 @@ http://localhost:5173 を開くと、**地図だけが表示された画面**が
 
 ---
 
-## 3. CLI で GeonicDB に触ってみる
+## 3. CLI で GeonicDB にログインする
 
 `geonic`（[0-2. geonicdb-cli のインストール](#0-2-geonicdb-cli-のインストール) 参照）で
-GeonicDB を触ってみます。
+GeonicDB にログインします。事前に案内されたメールアドレスとパスワードを使います。
 
 ```bash
 # 接続先を保存する（以降 --url を省略できる）
 geonic config set url https://geonicdb.geolonia.com
 
-# 自分が誰として認証されているか確認
-geonic me --api-key <配布カードの API キー> --service <テナント名>
+# ログイン（メールアドレス・パスワードを対話的に聞かれます）
+geonic auth login --tenant chusoku_stg
 ```
 
-毎回オプションを書くのが面倒なので、環境変数にしておきます。
+ログインに成功すると、トークンとテナント名が設定に保存されるので、以降のコマンドに
+`--api-key` や `--service` を付ける必要はありません。
 
 ```bash
-export GEONIC_API_KEY=<配布カードの API キー>
-export GEONIC_TENANT=<テナント名>
-alias g="geonic --api-key $GEONIC_API_KEY --service $GEONIC_TENANT"
+geonic me   # 自分が誰として認証されているか確認
 ```
 
 試しに 1 件だけ手で入れて、消してみましょう（エンティティ型名 `Facility` は例です。
 実際に使う型名は主催者の資料に従ってください）。
 
 ```bash
-g entities create '{
+geonic entities create '{
   "id": "urn:ngsi-ld:Facility:test:1",
   "type": "Facility",
   "name": { "type": "Property", "value": "テスト施設" },
@@ -149,9 +148,9 @@ g entities create '{
     "value": { "type": "Point", "coordinates": [139.767, 35.681] } }
 }'
 
-g entities list --type Facility --local
-g entities list --type Facility --local -f geojson   # GeoJSON でも出せる
-g entities delete urn:ngsi-ld:Facility:test:1
+geonic entities list --type Facility --local
+geonic entities list --type Facility --local -f geojson   # GeoJSON でも出せる
+geonic entities delete urn:ngsi-ld:Facility:test:1
 ```
 
 `{ "type": "Property", "value": ... }` という書き方が NGSI-LD の作法です。
@@ -182,8 +181,8 @@ scripts/csv-to-ngsild.mjs に作ってください。仕様は AGENTS.md に従�
 node scripts/csv-to-ngsild.mjs <データセットのファイル名>.csv > entities.ndjson
 wc -l entities.ndjson
 
-g import entities.ndjson --dry-run     # まず何が送られるか確認
-g import entities.ndjson --batch-size 100
+geonic import entities.ndjson --dry-run     # まず何が送られるか確認
+geonic import entities.ndjson --batch-size 100
 ```
 
 ```text
