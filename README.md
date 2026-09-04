@@ -164,37 +164,14 @@ geonic entities delete urn:ngsi-ld:Facility:test:1
 
 ## 4. 本番データを入れる（ここが山場・AI に書かせます）
 
-主催者から配布された CSV をリポジトリ直下に置き、中身を確認します。
-
-```bash
-head -3 <データセットのファイル名>.csv
-```
-
-CLI が読み込めるのは **NDJSON（1 行 1 エンティティ）** なので、CSV を変換する必要があります。
-この変換スクリプトを AI に書かせてください。`opencode` を起動して、たとえばこう頼みます。
+主催者から配布された CSV をリポジトリ直下に置いたら、あとは AI に任せます。
+`opencode` で、たとえばこう頼みます。
 
 ```text
-<データセットのファイル名>.csv を NGSI-LD の NDJSON に変換する Node スクリプトを
-scripts/csv-to-ngsild.mjs に作ってください。仕様は AGENTS.md に従うこと。
-外部パッケージは使わず、node 標準モジュールだけで書いてください。
+<データセットのファイル名>.csv を geonic コマンドでインポートして。
 ```
 
-できたら実行して、投入します。
-
-```bash
-node scripts/csv-to-ngsild.mjs <データセットのファイル名>.csv > entities.ndjson
-wc -l entities.ndjson
-
-geonic import entities.ndjson --dry-run     # まず何が送られるか確認
-geonic import entities.ndjson --batch-size 100
-```
-
-```text
-Imported: N succeeded, 0 failed, 0 skipped across N chunk(s).
-```
-
-> `--batch-size` は無料プランの上限（100 件/リクエスト）に合わせています。
-> 大きくすると 400 が返ります。
+CSV → NDJSON への変換、`geonic import` の実行まで AI がやってくれます。
 
 これで GeonicDB にはデータが入りましたが、**ブラウザに戻ってもまだ地図には何も出ません**。
 `src/App.tsx` がまだ「地図を表示するだけ」の状態で、データを取得して渡すコードを
